@@ -58,7 +58,7 @@ if (!defined('ABSPATH')) exit;
                         <td>
                             <button type="button"
                                     class="button remove"
-                                    data-key="<?php echo $i;?>">
+                                    data-index="<?php echo esc_attr($row['key']); ?>">
                                 Remove
                             </button>
                         </td>

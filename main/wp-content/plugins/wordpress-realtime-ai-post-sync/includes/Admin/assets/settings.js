@@ -53,36 +53,39 @@ document.addEventListener('DOMContentLoaded', function(){
     document.addEventListener('click', function(e){
 
         if(e.target.classList.contains('remove')){
-    
+
             if(!confirm('Delete this target?')) return;
-    
+
             let row = e.target.closest('tr');
+            let key = e.target.dataset.key;
             let index = e.target.dataset.index;
-    
-            // If row is newly added (no index or invalid index)
-            if(typeof index === 'undefined' || index === '' || isNaN(index)){
+
+            // If the key is empty (newly added row), just remove visually
+            if(key){
                 row.remove();
                 return;
+            } else {
+
+                let formData = new FormData();
+                formData.append('action','wprts_delete_target');
+                formData.append('key',index);
+                formData.append('nonce', wprts_ajax.nonce);
+
+                fetch(wprts_ajax.ajax_url,{
+                    method:'POST',
+                    body:formData
+                })
+                .then(res=>res.json())
+                .then(res=>{
+                    if(res.success){
+                        row.remove();
+                    }else{
+                        alert(res.data);
+                    }
+                });
             }
-    
-            let formData = new FormData();
-            formData.append('action','wprts_delete_target');
-            formData.append('index',index);
-            formData.append('nonce', wprts_ajax.nonce);
-    
-            fetch(wprts_ajax.ajax_url,{
-                method:'POST',
-                body:formData
-            })
-            .then(res=>res.json())
-            .then(res=>{
-                if(res.success){
-                    row.remove();
-                }else{
-                    alert(res.data);
-                }
-            });
         }
+
     });
     
 

@@ -12,9 +12,6 @@ class Settings {
         add_action('wp_ajax_wprts_delete_target', [$this,'delete_target']);
     }
 
-    /* =========================
-       MENU
-    ========================== */
     public function menu() {
         add_options_page(
             'Realtime AI Sync',
@@ -25,9 +22,6 @@ class Settings {
         );
     }
 
-    /* =========================
-       REGISTER SETTINGS
-    ========================== */
     public function register() {
 
         register_setting('wprts','wprts_mode');
@@ -37,12 +31,8 @@ class Settings {
         register_setting('wprts','wprts_openai_key');
     }
 
-    /* =========================
-       ENQUEUE ADMIN ASSETS
-    ========================== */
     public function enqueue_assets($hook) {
 
-        // Only load on our settings page
         if ($hook !== 'settings_page_wprts') {
             return;
         }
@@ -61,16 +51,10 @@ class Settings {
         ]);
     }
 
-    /* =========================
-       GENERATE UNIQUE KEY
-    ========================== */
     private function generate_key() {
         return wp_generate_password(32,false,false);
     }
 
-    /* =========================
-       DELETE TARGET (AJAX)
-    ========================== */
     public function delete_target() {
 
         check_ajax_referer('wprts_nonce','nonce');
@@ -107,10 +91,6 @@ class Settings {
         wp_send_json_success();
     }
     
-
-    /* =========================
-       SETTINGS PAGE
-    ========================== */
     public function page() {
 
         if (!current_user_can('manage_options')) {
