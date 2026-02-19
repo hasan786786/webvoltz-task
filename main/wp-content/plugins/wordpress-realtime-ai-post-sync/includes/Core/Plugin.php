@@ -9,6 +9,7 @@ class Plugin {
 
         require_once WPRTS_PATH . 'includes/Core/Logger.php';
         require_once WPRTS_PATH . 'includes/Admin/Settings.php';
+        require_once WPRTS_PATH . 'includes/Admin/Logs.php';
         require_once WPRTS_PATH . 'includes/Security/HmacAuth.php';
         require_once WPRTS_PATH . 'includes/Sync/HostDispatcher.php';
         require_once WPRTS_PATH . 'includes/Sync/TargetReceiver.php';
@@ -19,6 +20,11 @@ class Plugin {
         require_once WPRTS_PATH . 'includes/Translation/Translator.php';
 
         new \WPRTS\Admin\Settings();
+        
+        if (is_admin()) {
+            new \WPRTS\Admin\Logs();
+        }
+        
         new \WPRTS\Sync\HostDispatcher();
         new \WPRTS\Sync\TargetReceiver();
     }

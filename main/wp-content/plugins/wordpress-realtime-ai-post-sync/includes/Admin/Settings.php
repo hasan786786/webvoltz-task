@@ -20,6 +20,7 @@ class Settings {
             'wprts',
             [$this,'page']
         );
+        
     }
 
     public function register() {
@@ -39,7 +40,7 @@ class Settings {
 
         wp_enqueue_script(
             'wprts-admin',
-            plugin_dir_url(__FILE__) . 'assets/settings.js',
+            plugin_dir_url(__FILE__) . 'assets/js/settings.js',
             [],
             '1.0',
             true
