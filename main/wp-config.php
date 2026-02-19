@@ -85,7 +85,7 @@ $table_prefix = 'local_';
  *
  * @link https://developer.wordpress.org/advanced-administration/debug/debug-wordpress/
  */
-define( 'WP_DEBUG', true );
+define( 'WP_DEBUG', false );
 
 /* Add any custom values between this line and the "stop editing" line. */
 

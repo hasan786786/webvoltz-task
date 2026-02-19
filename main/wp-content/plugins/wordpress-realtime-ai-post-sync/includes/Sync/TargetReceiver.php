@@ -101,17 +101,72 @@ class TargetReceiver {
             return new WP_REST_Response(['error'=>'Insert failed'],500);
         }
 
+        // if (!empty($data['categories']) && is_array($data['categories'])) {
+        //     TaxonomySync::sync($post_id,$data['categories'],'category');
+        // }
+
         if (!empty($data['categories']) && is_array($data['categories'])) {
-            TaxonomySync::sync($post_id,$data['categories'],'category');
+            $term_ids = [];
+            foreach($data['categories'] as $cat_name){
+                $term = term_exists($cat_name, 'category');
+                if (!$term) {
+                    $term = wp_insert_term($cat_name, 'category');
+                }
+                if (!is_wp_error($term)) {
+                    $term_ids[] = is_array($term) ? $term['term_id'] : $term;
+                }
+            }
+            wp_set_post_terms($post_id, $term_ids, 'category');
         }
 
+        // if (!empty($data['tags']) && is_array($data['tags'])) {
+        //     TaxonomySync::sync($post_id,$data['tags'],'post_tag');
+        // }
+        
         if (!empty($data['tags']) && is_array($data['tags'])) {
-            TaxonomySync::sync($post_id,$data['tags'],'post_tag');
+            $term_ids = [];
+            foreach($data['tags'] as $tag_name){
+                $term = term_exists($tag_name, 'post_tag');
+                if (!$term) {
+                    $term = wp_insert_term($tag_name, 'post_tag');
+                }
+                if (!is_wp_error($term)) {
+                    $term_ids[] = is_array($term) ? $term['term_id'] : $term;
+                }
+            }
+            wp_set_post_terms($post_id, $term_ids, 'post_tag');
         }
+
+        // if (!empty($data['featured_image'])) {
+        //     MediaSync::sideload($data['featured_image'],$post_id);
+        // }
+
+        error_log("featured_image : ". $data['featured_image']);
 
         if (!empty($data['featured_image'])) {
-            MediaSync::sideload($data['featured_image'],$post_id);
-        }
+
+            require_once(ABSPATH . 'wp-admin/includes/image.php');
+            require_once(ABSPATH . 'wp-admin/includes/file.php');
+            require_once(ABSPATH . 'wp-admin/includes/media.php');
+        
+            $image_url = $data['featured_image'];
+            $tmp = download_url($image_url);
+        
+            if (!is_wp_error($tmp)) {
+                $file_array = [
+                    'name' => basename($image_url),
+                    'tmp_name' => $tmp
+                ];
+        
+                $id = media_handle_sideload($file_array, $post_id);
+        
+                if (!is_wp_error($id)) {
+                    set_post_thumbnail($post_id, $id);
+                } else {
+                    @unlink($tmp);
+                }
+            }
+        }        
 
         Logger::log([
             'role'           => 'target',

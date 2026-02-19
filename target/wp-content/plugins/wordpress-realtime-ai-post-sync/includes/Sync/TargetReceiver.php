@@ -101,17 +101,83 @@ class TargetReceiver {
             return new WP_REST_Response(['error'=>'Insert failed'],500);
         }
 
+        // if (!empty($data['categories']) && is_array($data['categories'])) {
+        //     TaxonomySync::sync($post_id,$data['categories'],'category');
+        // }
+
         if (!empty($data['categories']) && is_array($data['categories'])) {
-            TaxonomySync::sync($post_id,$data['categories'],'category');
+            $term_ids = [];
+            foreach($data['categories'] as $cat_name){
+                $term = term_exists($cat_name, 'category');
+                if (!$term) {
+                    $term = wp_insert_term($cat_name, 'category');
+                }
+                if (!is_wp_error($term)) {
+                    $term_ids[] = is_array($term) ? $term['term_id'] : $term;
+                }
+            }
+            wp_set_post_terms($post_id, $term_ids, 'category');
         }
 
+        // if (!empty($data['tags']) && is_array($data['tags'])) {
+        //     TaxonomySync::sync($post_id,$data['tags'],'post_tag');
+        // }
+        
         if (!empty($data['tags']) && is_array($data['tags'])) {
-            TaxonomySync::sync($post_id,$data['tags'],'post_tag');
+            $term_ids = [];
+            foreach($data['tags'] as $tag_name){
+                $term = term_exists($tag_name, 'post_tag');
+                if (!$term) {
+                    $term = wp_insert_term($tag_name, 'post_tag');
+                }
+                if (!is_wp_error($term)) {
+                    $term_ids[] = is_array($term) ? $term['term_id'] : $term;
+                }
+            }
+            wp_set_post_terms($post_id, $term_ids, 'post_tag');
         }
+
+        // if (!empty($data['featured_image'])) {
+        //     MediaSync::sideload($data['featured_image'],$post_id);
+        // }
+
+        // if (!empty($data['featured_image'])) {
+
+        //     require_once(ABSPATH . 'wp-admin/includes/image.php');
+        //     require_once(ABSPATH . 'wp-admin/includes/file.php');
+        //     require_once(ABSPATH . 'wp-admin/includes/media.php');
+        
+        //     $image_url = esc_url_raw($data['featured_image']);
+        
+        //     $tmp = download_url($image_url);
+        
+        //     error_log("Download URL: " . $image_url);
+        //     error_log("Temporary file: " . print_r($tmp, true));
+        
+        //     if (is_wp_error($tmp)) {
+        //         error_log("Download failed: " . $tmp->get_error_message());
+        //     } else {
+        //         $file_array = [
+        //             'name'     => sanitize_file_name(basename(parse_url($image_url, PHP_URL_PATH))),
+        //             'tmp_name' => $tmp
+        //         ];
+        
+        //         $id = media_handle_sideload($file_array, $post_id);
+        
+        //         if (is_wp_error($id)) {
+        //             error_log("Sideload failed: " . $id->get_error_message());
+        //             @unlink($tmp); 
+        //         } else {
+        //             set_post_thumbnail($post_id, $id);
+        //             error_log("Featured image set successfully. Attachment ID: " . $id);
+        //         }
+        //     }
+        // }
 
         if (!empty($data['featured_image'])) {
-            MediaSync::sideload($data['featured_image'],$post_id);
-        }
+            update_post_meta($post_id, '_featured_image_url', esc_url_raw($data['featured_image']));
+            error_log("Stored featured image URL: " . $data['featured_image']);
+        }        
 
         Logger::log([
             'role'           => 'target',
